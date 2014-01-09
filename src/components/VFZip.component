@@ -1,0 +1,101 @@
+<apex:component controller="VFZip_Con" selfClosing="true">
+    <apex:attribute name="attachmentIds" required="true" type="String" description="Comma seperated ID of attachment to zip"/>
+    <apex:attribute name="mode" type="String" default="auto" description="Set 'auto' for opening zip window as soon as component is visible,Set 'button' to render a button that will trigger the zip window"/>
+    <apex:attribute name="generatedFileName" type="String" description="File name of the generated zip file" required="true"/>
+    
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"/>
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.Reveal, '/jquery.reveal.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.JSZip,'/jszip.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.Reveal, '/reveal.css')}"/>
+    <style>
+        .statusMessage{
+            padding:4px;
+            font-weight:bold;
+            font-size:14px;
+        }
+    </style>
+    <script>
+        
+        $(function () {
+            if("{!LOWER(mode)}" != 'button'){
+                initZip{!randomInt}();
+            }
+            
+           
+        });
+        
+        function initZip{!randomInt}(){
+            $bf9Status{!randomInt} = $("#bf9Status{!randomInt}Message");
+            $bf9Status{!randomInt}.html('Preparing files for download');
+            fetchAttachments{!randomInt}(zipAttachments{!randomInt});
+            $('#myModal').reveal();
+        }
+        
+       
+        
+        function zipAttachments{!randomInt}(attachments){
+              $bf9Status{!randomInt} = $("#bf9Status{!randomInt}Message");
+              $bf9Status{!randomInt}.html('Creating Zip..');
+              var zip = new JSZip();
+              $.each(attachments,function(){
+                  zip.file(this.AttachmentObj.Name, this.base64Body, {base64: true});
+              });
+              var blobLink = document.getElementById('bf9FileLink{!randomInt}');
+              try {
+                blobLink.download = "{!generatedFileName}.zip";
+                blobLink.href = window.URL.createObjectURL(zip.generate({type:"blob"}));
+                //widnow.open(blobLink.href);
+              } catch(e) {
+                blobLink.innerHTML += " (not supported on this browser)";
+                console.log(e);
+              }
+              $("#bf9FileLinkDiv{!randomInt}").show();
+              $("#bf9Status{!randomInt}").hide();
+        }
+       
+       function fetchAttachments{!randomInt}(callback){
+           
+           Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.VFZip_Con.getAttachments}','{!attachmentIds}',
+                    function(result, event){
+                        if (event.status) {
+                            callback(result,event);
+                        } 
+                    }, 
+                    { buffer: false, escape: true, timeout: 120000 }
+            );
+       }
+    </script>
+    
+    <apex:outputPanel rendered="{!LOWER(mode) == 'button'}">
+        <button onclick="initZip{!randomInt}();return false;">Download Files</button>
+    </apex:outputPanel>
+   
+    <div id="myModal" class="reveal-modal">
+        <center>
+            <h1 style="font-size:18px">
+                <img src="/img/icon/box32.png" style="vertical-align: bottom"/>
+                Download Files
+            </h1>
+        </center>
+        <br/>
+        <p> 
+            <div>
+                <div id="bf9Status{!randomInt}">
+                    <center><apex:image value="/img/loading32.gif"/></center>
+                    <center><div id="bf9Status{!randomInt}Message" class="statusMessage"/></center>
+                </div>
+                <div>
+                <br/>
+                    <div id="bf9FileLinkDiv{!randomInt}" style="display:none">
+                        <center>
+                            <a href="#" id="bf9FileLink{!randomInt}">Click here to download your file</a>
+                        </center>
+                    </div>
+                </div>
+            </div>
+        </p>
+        <a class="close-reveal-modal">&#215;</a>
+    </div>
+</apex:component>

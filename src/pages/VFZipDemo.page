@@ -1,0 +1,10 @@
+<apex:page tabStyle="contact" sidebar="false">
+    <div style="min-height:300px">
+        <apex:sectionHeader title="VFZip" subtitle="Create zip files in your VF pages using VFZip Component"/>
+        <apex:pageBlock title="VF Zip Demo">           
+            <center><c:VFZip attachmentIds="00P90000004wnj8,00P90000004w08e,00P90000004w08Z" generatedFileName="myzip" mode="button"/></center>
+            <br/>
+            <br/>
+        </apex:pageBlock>
+    </div>
+</apex:page>
