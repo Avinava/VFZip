@@ -98,4 +98,5 @@
         </p>
         <a class="close-reveal-modal">&#215;</a>
     </div>
+	
 </apex:component>
